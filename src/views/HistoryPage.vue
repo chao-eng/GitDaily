@@ -105,18 +105,17 @@ onMounted(() => {
         <h1 class="text-3xl font-bold text-text-title mb-2">历史记录</h1>
         <p class="text-[14px] text-text-secondary">在此查阅您过去生成的所有日报记录。</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex items-center gap-3">
         <el-date-picker
           v-model="filterDate"
           type="daterange"
           range-separator="-"
           start-placeholder="开始"
           end-placeholder="结束"
-          size="small"
-          class="!w-64 l-picker"
+          class="!w-64 !h-[34px]"
           @change="loadReports"
         />
-        <button @click="loadReports" class="industrial-btn-secondary py-1 px-4 text-[13px]">
+        <button @click="loadReports" class="industrial-btn-secondary !h-[34px] !py-0 px-4 text-[13px] border-border-base hover:border-primary">
           <el-icon class="mr-1"><Search /></el-icon>
           筛选
         </button>

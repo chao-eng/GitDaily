@@ -260,24 +260,24 @@ onMounted(() => {
     <!-- Right Panel: Result Area -->
     <div class="flex-1 flex flex-col bg-bg-base border-l border-border-base relative">
       <!-- Toolbar -->
-      <header class="h-14 flex-shrink-0 flex items-center justify-between px-8 border-b border-border-base bg-bg-container relative z-10">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+      <header class="min-h-[56px] flex-shrink-0 flex items-center justify-between px-8 border-b border-border-base bg-bg-container relative z-10 flex-nowrap">
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <el-icon class="text-primary" :size="18"><MagicStick /></el-icon>
           </div>
-          <h2 class="text-lg font-bold text-text-title">生成结果</h2>
+          <h2 class="text-lg font-bold text-text-title whitespace-nowrap">生成结果</h2>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 shrink-0">
           <button 
             v-if="generateStore.generatedContent"
-            class="industrial-btn-secondary text-[13px] py-1.5"
+            class="industrial-btn-secondary text-[13px] py-1.5 whitespace-nowrap"
             @click="copyToClipboard"
           >
             <el-icon class="mr-1"><CopyDocument /></el-icon>
             复制全文
           </button>
           <button 
-            class="industrial-btn-primary text-[13px] py-1.5 !px-5" 
+            class="industrial-btn-primary text-[13px] py-1.5 !px-5 whitespace-nowrap" 
             @click="generateReport" 
             :disabled="generating || generateStore.commits.length === 0"
           >

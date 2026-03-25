@@ -8,6 +8,7 @@
     "core:window:allow-theme",
     "core:window:allow-set-theme",
     "core:app:allow-set-app-theme",
+    "core:app:allow-version",
     "opener:default",
     "dialog:default",
     "fs:default",

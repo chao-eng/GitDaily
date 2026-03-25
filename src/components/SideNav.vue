@@ -12,6 +12,8 @@ import {
 import { useRoute } from 'vue-router'
 import { useSettingsStore } from '../stores/settingsStore'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { getVersion } from '@tauri-apps/api/app'
+import { ref, onMounted } from 'vue'
 
 const route = useRoute()
 const settingsStore = useSettingsStore()
@@ -24,6 +26,16 @@ const toggleTheme = () => {
 const openGithub = async () => {
   await openUrl('https://github.com/chao-eng/GitDaily')
 }
+
+const version = ref('...')
+
+onMounted(async () => {
+  try {
+    version.value = await getVersion()
+  } catch (e) {
+    version.value = '1.0.0'
+  }
+})
 
 const navItems = [
   { name: '仪表盘', path: '/dashboard', icon: HomeFilled },
@@ -76,7 +88,7 @@ const navItems = [
       >
         <el-icon :size="16"><component :is="settingsStore.theme === 'dark' ? Moon : Sunny" /></el-icon>
         <span class="text-[13px] font-medium">{{ settingsStore.theme === 'dark' ? '深色' : '浅色' }}</span>
-        <span class="ml-auto text-[11px] opacity-40 font-mono">v1.1.0</span>
+        <span class="ml-auto text-[11px] opacity-40 font-mono">v{{ version }}</span>
       </div>
     </div>
   </div>
