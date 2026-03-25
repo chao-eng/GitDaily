@@ -1,0 +1,257 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  
+  --color-bg-base: var(--bg-base);
+  --color-bg-container: var(--bg-container);
+  --color-border-base: var(--border-base);
+  
+  --color-text-title: var(--text-title);
+  --color-text-body: var(--text-body);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-placeholder: var(--text-placeholder);
+
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --shadow-lark: 0 4px 12px rgba(31, 35, 41, 0.08);
+}
+
+@layer base {
+  /* LIGHT MODE - Standard Lark White */
+  :root {
+    --primary: #3370FF;
+    --primary-hover: #4E83FF;
+    --primary-active: #2858CA;
+    
+    --bg-base: #F5F7FA;
+    --bg-container: #FFFFFF;
+    --border-base: #DEE0E3;
+    
+    --text-title: #1F2329;
+    --text-body: #1F2329;
+    --text-secondary: #646A73;
+    --text-placeholder: #8F959E;
+
+    /* Element Plus Overrides - Lark Light */
+    --el-color-primary: var(--primary);
+    --el-bg-color: var(--bg-base);
+    --el-bg-color-overlay: var(--bg-container);
+    --el-text-color-primary: var(--text-title);
+    --el-text-color-regular: var(--text-body);
+    --el-text-color-placeholder: var(--text-placeholder);
+    --el-border-color: var(--border-base);
+    --el-border-color-light: #EBECED;
+    --el-border-radius-base: 6px;
+  }
+
+  /* DARK MODE - Lark Dark Blue-Black */
+  :root.dark {
+    --primary: #3370FF;
+    --primary-hover: #4E83FF;
+    --primary-active: #2858CA;
+    
+    --bg-base: #1A1D21;
+    --bg-container: #23272E;
+    --border-base: #373C43;
+    
+    --text-title: #F5F7FA;
+    --text-body: #F5F7FA;
+    --text-secondary: #A6ABB2;
+    --text-placeholder: #646A73;
+
+    /* Element Plus Overrides - Lark Dark */
+    --el-color-primary: var(--primary);
+    --el-bg-color: var(--bg-base);
+    --el-bg-color-overlay: var(--bg-container);
+    --el-text-color-primary: var(--text-title);
+    --el-text-color-regular: var(--text-body);
+    --el-text-color-placeholder: var(--text-placeholder);
+    --el-border-color: var(--border-base);
+    --el-border-color-light: #2E3238;
+  }
+}
+
+html, body {
+  background-color: var(--bg-base) !important;
+  color: var(--text-body) !important;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  @apply font-body antialiased;
+  font-size: 14px;
+}
+
+@layer base {
+  .el-button {
+    @apply font-medium transition-all duration-200;
+    border-radius: 6px;
+  }
+
+  .el-button--primary {
+    @apply shadow-sm;
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+  }
+
+  .el-input__wrapper, 
+  .el-select__wrapper,
+  .el-range-editor.el-input__inner,
+  .el-textarea__inner {
+    @apply !bg-bg-container !shadow-none border border-border-base hover:border-primary transition-all duration-200 !rounded-[6px];
+  }
+
+  .el-input__inner, .el-range-input {
+    @apply !text-text-body placeholder:!text-text-placeholder;
+    font-size: 14px !important;
+  }
+
+  .el-popper.is-light, .el-popper.is-dark {
+    @apply !bg-bg-container !text-text-body !border-border-base shadow-lark !rounded-lg;
+  }
+
+  .el-select-dropdown__item {
+    @apply !text-text-secondary transition-colors duration-150;
+    font-size: 14px !important;
+  }
+
+  .el-select-dropdown__item.is-hovering {
+    @apply !bg-primary/5 !text-primary;
+  }
+
+  .el-select-dropdown__item.is-selected {
+    @apply !bg-primary/10 !text-primary !font-semibold;
+  }
+
+  .markdown-body {
+    background-color: transparent !important;
+    color: var(--text-body) !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    line-height: 1.6;
+  }
+
+  .markdown-body table tr,
+  .markdown-body table th,
+  .markdown-body table td {
+    background-color: transparent !important;
+    border-color: var(--border-base) !important;
+  }
+
+  .el-picker-panel {
+    @apply !bg-bg-container !text-text-body !border-border-base !rounded-lg;
+  }
+  
+  .el-date-table th {
+    @apply !text-text-placeholder border-b border-border-base;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight text-text-title;
+  }
+}
+
+/* Lark (Feishu) Specific UI Components */
+.lark-card {
+  background-color: var(--bg-container);
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.lark-card-hover:hover {
+  box-shadow: var(--shadow-lark);
+  border-color: var(--primary);
+  opacity: 0.95;
+  cursor: pointer;
+}
+
+.industrial-btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.industrial-btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.industrial-btn-primary:active {
+  background-color: var(--primary-active);
+}
+
+.industrial-btn-secondary {
+  background-color: var(--bg-container);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-base);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.industrial-btn-secondary:hover {
+  background-color: var(--bg-base);
+}
+
+.lark-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.lark-sidebar-item.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+.lark-sidebar-item:not(.active):hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-title);
+}
+
+.dark .lark-sidebar-item:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-base);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-placeholder);
+}

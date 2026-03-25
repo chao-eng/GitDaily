@@ -1,0 +1,19 @@
+
+> tauri-app@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.1 building for production...
+transforming...
+✓ 1625 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.48 kB │ gzip:  0.31 kB
+dist/assets/index-C12DazCk.css            376.73 kB │ gzip: 52.38 kB
+dist/assets/SettingsPage-BFHf2nqy.js        0.32 kB │ gzip:  0.28 kB
+dist/assets/HistoryPage-Ci_oSsnO.js         0.33 kB │ gzip:  0.29 kB
+dist/assets/GeneratePage-BbCu1Enc.js        0.33 kB │ gzip:  0.29 kB
+dist/assets/RepoManagePage-CWA26Xkr.js      0.34 kB │ gzip:  0.29 kB
+dist/assets/PromptManagePage-BE20YNtt.js    0.34 kB │ gzip:  0.30 kB
+dist/assets/DashboardPage-6d75LNaK.js       1.96 kB │ gzip:  0.97 kB
+dist/assets/index-oXzH3aIx.js             124.81 kB │ gzip: 49.03 kB
+✓ built in 2.47s
