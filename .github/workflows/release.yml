@@ -30,6 +30,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: setup node
         uses: actions/setup-node@v4
@@ -50,8 +52,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: "SpaceShift v__VERSION__"
-          releaseBody: "SpaceShift 跨平台正式版本发布（自动编译）。"
+          releaseName: "GitDaily v__VERSION__"
+          releaseBody: "GitDaily 跨平台正式版本发布（自动编译）。"
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
