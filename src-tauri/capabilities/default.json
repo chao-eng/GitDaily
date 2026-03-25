@@ -10,6 +10,7 @@
     "core:app:allow-set-app-theme",
     "opener:default",
     "dialog:default",
-    "fs:default"
+    "fs:default",
+    "window-state:default"
   ]
 }
