@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import SideNav from "../components/SideNav.vue";
-</script>
-
 <template>
   <div class="flex h-screen w-screen overflow-hidden bg-bg-base font-body text-text-body relative p-1.5">
     <!-- Simplified Lark-style Background Decor -->

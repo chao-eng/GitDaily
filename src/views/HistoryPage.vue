@@ -91,7 +91,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col p-8 max-w-6xl mx-auto bg-bg-base">
+  <div class="flex flex-col p-8 max-w-6xl mx-auto">
     <header class="flex justify-between items-end mb-10">
       <div>
         <h1 class="text-3xl font-bold text-text-title mb-2">历史记录</h1>
@@ -115,7 +115,7 @@ onMounted(() => {
     </header>
 
     <!-- Reports Grid -->
-    <div v-if="reports.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto custom-scrollbar pr-2 pb-10">
+    <div v-if="reports.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
       <div 
         v-for="report in reports" 
         :key="report.id"

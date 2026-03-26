@@ -76,7 +76,7 @@ const quickCards = [
 </script>
 
 <template>
-  <div class="p-8 max-w-6xl mx-auto flex flex-col h-full overflow-y-auto custom-scrollbar bg-bg-base">
+  <div class="p-8 max-w-6xl mx-auto flex flex-col">
     <!-- Header Section -->
     <header class="mb-10">
       <div class="flex items-center gap-2 text-primary font-medium mb-4">

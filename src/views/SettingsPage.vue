@@ -82,7 +82,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-10 max-w-4xl mx-auto flex flex-col h-full overflow-y-auto custom-scrollbar bg-bg-base">
+  <div class="p-10 max-w-4xl mx-auto flex flex-col">
     <header class="mb-10">
       <h1 class="text-3xl font-bold text-text-title mb-2">系统设置</h1>
       <p class="text-[14px] text-text-secondary">管理您的 AI 后端服务与全局偏好。</p>
@@ -188,7 +188,7 @@ onMounted(() => {
         </div>
 
         <el-form label-position="top" class="lark-form">
-          <el-form-item label="Git 用户名 (用于筛选提交记录)">
+          <el-form-item label="Git 用户名 (用于筛选提交记录，为空则不限制)">
             <div class="flex gap-4 w-full">
               <el-input 
                 v-model="settingsStore.gitUserName" 

@@ -107,7 +107,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-10 max-w-5xl mx-auto flex flex-col h-full bg-bg-base overflow-y-auto custom-scrollbar">
+  <div class="p-10 max-w-5xl mx-auto flex flex-col">
     <header class="flex justify-between items-end mb-10">
       <div>
         <h1 class="text-3xl font-bold text-text-title mb-2">模板管理</h1>
