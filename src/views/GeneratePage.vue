@@ -67,7 +67,7 @@ const fetchCommits = async () => {
       repoIds: selectedRepoIds.value,
       dateFrom: formatLocalDate(dateRange.value[0]),
       dateTo: formatLocalDate(dateRange.value[1]),
-      author: settingsStore.gitUserName || null,
+      author: settingsStore.gitUserName,
     };
     const result = await invoke<CommitRecord[]>("fetch_commits", { query });
     generateStore.commits = result;

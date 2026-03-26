@@ -11,7 +11,6 @@ import {
   Monitor
 } from '@element-plus/icons-vue'
 import { useRepoStore } from '../stores/repoStore'
-import ReportHeatmap from '../components/ReportHeatmap.vue'
 
 const router = useRouter()
 const repoStore = useRepoStore()

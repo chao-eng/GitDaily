@@ -17,12 +17,12 @@ export const useSettingsStore = defineStore('settings', {
     async loadSettings() {
       try {
         const settings = await invoke<Record<string, string>>('get_settings');
-        if (settings['ai.api_base_url']) this.aiConfig.apiBaseUrl = settings['ai.api_base_url'];
-        if (settings['ai.api_key']) this.aiConfig.apiKey = settings['ai.api_key'];
-        if (settings['ai.model_name']) this.aiConfig.modelName = settings['ai.model_name'];
+        if ('ai.api_base_url' in settings) this.aiConfig.apiBaseUrl = settings['ai.api_base_url'];
+        if ('ai.api_key' in settings) this.aiConfig.apiKey = settings['ai.api_key'];
+        if ('ai.model_name' in settings) this.aiConfig.modelName = settings['ai.model_name'];
         if (settings['ai.temperature']) this.aiConfig.temperature = parseFloat(settings['ai.temperature']);
         if (settings['ai.max_tokens']) this.aiConfig.maxTokens = parseInt(settings['ai.max_tokens']);
-        if (settings['git.user_name']) this.gitUserName = settings['git.user_name'];
+        if ('git.user_name' in settings) this.gitUserName = settings['git.user_name'];
         if (settings['app.theme']) this.theme = settings['app.theme'] as 'light' | 'dark' | 'system';
       } catch (err) {
         console.error('Failed to load settings from backend:', err);
