@@ -50,9 +50,7 @@ const navItems = [
 <template>
   <div class="h-full flex flex-col bg-bg-container border-r border-border-base p-3">
     <div class="flex items-center gap-2.5 px-3 py-5 mb-6">
-      <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-        <el-icon :size="20" color="white"><Document /></el-icon>
-      </div>
+      <img src="/logo.png" class="w-8 h-8 rounded-lg" alt="GitDaily Logo" />
       <span class="text-lg font-display font-bold tracking-tight text-text-title">GitDaily</span>
     </div>
 
