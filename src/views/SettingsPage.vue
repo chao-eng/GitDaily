@@ -59,11 +59,20 @@ const testConnection = async () => {
 }
 
 const fetchGitUser = async () => {
+  loading.value = true
   try {
     const name = await invoke<string>('get_git_user_name', { repoPath: null })
-    if (name) settingsStore.gitUserName = name
+    if (name) {
+      settingsStore.gitUserName = name
+      ElMessage.success('已自动获取 Git 用户名: ' + name)
+    } else {
+      ElMessage.warning('未能从 Git 配置中获取到用户名，请手动填写')
+    }
   } catch (err) {
-     console.warn('Could not auto-fetch git user')
+    console.warn('Could not auto-fetch git user:', err)
+    ElMessage.error('获取失败，请确保已安装 Git 环境')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -148,16 +157,18 @@ onMounted(() => {
 
             <div class="mt-8 flex gap-4">
               <button 
+                type="button"
                 class="industrial-btn-primary px-8 py-2" 
-                @click="saveSettings" 
+                @click.prevent="saveSettings" 
                 :disabled="loading"
               >
                 <el-icon v-if="loading" class="animate-spin mr-1"><Loading /></el-icon>
                 保存配置
               </button>
               <button 
+                type="button"
                 class="industrial-btn-secondary px-6 py-2"
-                @click="testConnection" 
+                @click.prevent="testConnection" 
                 :disabled="testing"
               >
                 <el-icon v-if="testing" class="animate-spin mr-1"><Loading /></el-icon>
@@ -183,13 +194,25 @@ onMounted(() => {
                 v-model="settingsStore.gitUserName" 
                 placeholder="例如: 张三"
               />
-              <button @click="fetchGitUser" class="industrial-btn-secondary shrink-0">
+              <button 
+                type="button"
+                @click.prevent="fetchGitUser" 
+                class="industrial-btn-secondary shrink-0"
+                :disabled="loading"
+              >
+                <el-icon v-if="loading" class="animate-spin mr-1"><Loading /></el-icon>
                 自动获取
               </button>
             </div>
           </el-form-item>
           <div class="mt-6">
-            <button class="industrial-btn-primary px-8 py-2" @click="saveSettings" :disabled="loading">
+            <button 
+              type="button"
+              class="industrial-btn-primary px-8 py-2" 
+              @click.prevent="saveSettings" 
+              :disabled="loading"
+            >
+              <el-icon v-if="loading" class="animate-spin mr-1"><Loading /></el-icon>
               保存更改
             </button>
           </div>
