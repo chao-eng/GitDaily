@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { 
-  ArrowRight, 
-  ArrowLeft, 
-  Pointer, 
-  Monitor, 
-  MagicStick,
-  Check
-} from '@element-plus/icons-vue'
+import { MagicStick, Monitor, Pointer, Check, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const show = ref(false)
 const step = ref(1)
+
+// Define steps data in script to use imported icons
+const welcomeSteps = [
+  { icon: Monitor, title: '添加仓库', desc: '关联您的本地 Git 项目' },
+  { icon: Pointer, title: '一键生成', desc: '自动抓取并整理提交信息' },
+  { icon: Check, title: '成果展示', desc: 'AI 生成 MD 文档供直接使用' }
+]
 
 const checkFirstTime = () => {
   const isFirst = localStorage.getItem('gd_first_time') === null
@@ -54,11 +54,7 @@ onMounted(() => {
           <div v-else-if="step === 2" key="2" class="flex flex-col items-center">
             <h2 class="text-2xl font-bold text-text-title mb-10">仅需三步，告别周报烦恼</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div v-for="(item, idx) in [
-                { icon: Monitor, title: '添加仓库', desc: '关联您的本地 Git 项目' },
-                { icon: Pointer, title: '一键生成', desc: '自动抓取并整理提交信息' },
-                { icon: Check, title: '成果展示', desc: 'AI 生成 MD 文档供直接使用' }
-              ]" :key="idx" class="flex flex-col items-center">
+              <div v-for="(item, idx) in welcomeSteps" :key="idx" class="flex flex-col items-center">
                 <div class="w-14 h-14 rounded-xl bg-primary/5 flex items-center justify-center mb-4 text-primary">
                   <el-icon :size="20"><component :is="item.icon" /></el-icon>
                 </div>
@@ -104,7 +100,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .animate-bounce.duration-slow {
   animation-duration: 3s;

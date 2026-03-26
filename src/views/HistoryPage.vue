@@ -2,14 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  Delete, 
-  Search,
-  CopyDocument,
-  ArrowRight,
-  Collection,
-  Download
-} from '@element-plus/icons-vue'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeTextFile } from '@tauri-apps/plugin-fs'
 import { marked } from 'marked'
@@ -174,7 +166,7 @@ onMounted(() => {
             <h2 class="text-xl font-bold text-text-title">日报记录详情</h2>
           </div>
           <div class="flex gap-2">
-            <button class="w-9 h-9 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center transition-colors" @click="exportToFile(selectedReport!)">
+            <button class="w-9 h-9 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center transition-colors" @click="exportToFile(selectedReport)">
               <el-icon :size="18"><Download /></el-icon>
             </button>
             <button class="w-9 h-9 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center transition-colors" @click="copyToClipboard(selectedReport.content)">
@@ -199,7 +191,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .custom-date-picker :deep(.el-input__wrapper) {
   color: var(--text-secondary);

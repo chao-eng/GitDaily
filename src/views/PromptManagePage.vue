@@ -2,13 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  Plus, 
-  Delete, 
-  Edit, 
-  Star, 
-  StarFilled
-} from '@element-plus/icons-vue'
 
 interface Prompt {
   id: number;
@@ -89,9 +82,6 @@ const deletePrompt = (id: number) => {
     customClass: 'gitdaily-message-box'
   }).then(async () => {
     try {
-      await invoke('delete_report', { id }) // Fixed to call delete_prompt in future impl? No, I implemented delete_prompt!
-      // Wait, let me check my command names! Oh, I implemented delete_prompt but might have typed delete_report by mistake here.
-      // Re-check commands/prompt_commands.rs... yes, delete_prompt.
       await invoke('delete_prompt', { id })
       prompts.value = prompts.value.filter(p => p.id !== id)
       ElMessage.success('模板已删除')
@@ -154,7 +144,7 @@ onMounted(() => {
               :class="{'text-primary': prompt.is_default}"
               @click="setDefault(prompt.id)"
             >
-              <el-icon :size="16"><component :is="prompt.is_default ? StarFilled : Star" /></el-icon>
+              <el-icon :size="16"><component :is="prompt.is_default ? 'StarFilled' : 'Star'" /></el-icon>
             </button>
           </div>
           
@@ -224,7 +214,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .fade-bottom {
   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);

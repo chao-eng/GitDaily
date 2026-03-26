@@ -3,14 +3,6 @@ import { onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  FolderOpened, 
-  Plus, 
-  Delete, 
-  CircleCheckFilled, 
-  CircleCloseFilled,
-  Monitor
-} from '@element-plus/icons-vue'
 import { useRepoStore, Repository } from '../stores/repoStore'
 
 const repoStore = useRepoStore()
@@ -130,7 +122,7 @@ onMounted(() => {
                 :class="[repo.isActive ? 'text-emerald-500 hover:bg-emerald-50' : 'text-text-placeholder hover:bg-black/5 dark:hover:bg-white/5']"
                 @click="toggleRepo(repo)"
               >
-                <el-icon :size="18"><component :is="repo.isActive ? CircleCheckFilled : CircleCloseFilled" /></el-icon>
+                <el-icon :size="18"><component :is="repo.isActive ? 'CircleCheckFilled' : 'CircleCloseFilled'" /></el-icon>
               </button>
             </el-tooltip>
             
@@ -164,5 +156,4 @@ onMounted(() => {
 
 
 <style scoped>
-@reference "../styles/main.css";
 </style>

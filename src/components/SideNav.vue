@@ -95,7 +95,6 @@ const navItems = [
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .router-link-active {
   color: var(--primary);

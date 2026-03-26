@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { ElMessage } from 'element-plus'
-import { Connection, InfoFilled } from '@element-plus/icons-vue'
 import { useSettingsStore } from '../stores/settingsStore'
 
 const settingsStore = useSettingsStore()
@@ -201,7 +200,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .lark-form :deep(.el-form-item__label) {
   color: var(--text-secondary);

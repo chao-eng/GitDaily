@@ -2,6 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 
+defineOptions({
+  name: 'ReportHeatmap'
+})
+
 const reportDates = ref<string[]>([])
 const loading = ref(true)
 
@@ -112,7 +116,7 @@ onMounted(() => {
       </div>
     </div>
     
-    <div class="mt-6 flex justify-between text-[11px] text-text-secondary font-medium tracking-wide px-1">
+    <div v-if="days && days.length > 0" class="mt-6 flex justify-between text-[11px] text-text-secondary font-medium tracking-wide px-1">
       <span>{{ new Date(days[0].date).toLocaleDateString('zh-CN', { month: 'short', year: 'numeric' }) }}</span>
       <span class="font-bold">今天</span>
     </div>
@@ -120,5 +124,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 </style>

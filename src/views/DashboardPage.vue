@@ -154,7 +154,6 @@ const quickCards = [
 </template>
 
 <style scoped>
-@reference "../styles/main.css";
 
 .custom-scrollbar::-webkit-scrollbar {
   display: none;
