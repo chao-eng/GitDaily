@@ -2,7 +2,6 @@
 import { watchEffect, onMounted } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import MainLayout from "./layouts/MainLayout.vue"
-import WelcomeWizard from "./components/WelcomeWizard.vue"
 import { useSettingsStore } from "./stores/settingsStore"
 
 const settingsStore = useSettingsStore()
