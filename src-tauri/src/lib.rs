@@ -29,6 +29,8 @@ pub fn run() {
                 .on_menu_event(|app, event| {
                     match event.id.as_ref() {
                         "open" => {
+                            #[cfg(target_os = "macos")]
+                            app.set_activation_policy(tauri::ActivationPolicy::Regular);
                             if let Some(window) = app.get_webview_window("main") {
                                 window.show().unwrap();
                                 window.set_focus().unwrap();
@@ -47,6 +49,8 @@ pub fn run() {
                     } = event
                     {
                         let app = tray.app_handle();
+                        #[cfg(target_os = "macos")]
+                        app.set_activation_policy(tauri::ActivationPolicy::Regular);
                         if let Some(window) = app.get_webview_window("main") {
                             window.show().unwrap();
                             window.set_focus().unwrap();
@@ -72,8 +76,24 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {
-                window.hide().unwrap();
-                api.prevent_close();
+                let app = window.app_handle();
+                let conn_guard = app.state::<Mutex<rusqlite::Connection>>();
+                
+                // 检查是否开启了后台常驻（由自动生成开关决定）
+                let hide_to_tray = if let Ok(config) = services::scheduler_service::SchedulerService::get_config(&conn_guard) {
+                    config.enabled
+                } else {
+                    false
+                };
+
+                if hide_to_tray {
+                    #[cfg(target_os = "macos")]
+                    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                    window.hide().unwrap();
+                    api.prevent_close();
+                } else {
+                    app.exit(0);
+                }
             }
             _ => {}
         })
