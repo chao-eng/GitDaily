@@ -6,24 +6,82 @@ pub mod db;
 pub mod utils;
 
 use tauri::Manager;
+use tauri::tray::{TrayIconBuilder, TrayIconEvent};
+use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
 use std::sync::Mutex;
+use tauri::WindowEvent;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            // 创建系统托盘菜单
+            let tray_menu = MenuBuilder::new(app)
+                .item(&MenuItem::with_id(app, "open", "打开主窗口", true, None::<&str>)?)
+                .item(&PredefinedMenuItem::separator(app)?)
+                .item(&MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?)
+                .build()?;
+
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&tray_menu)
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| {
+                    match event.id.as_ref() {
+                        "open" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                window.show().unwrap();
+                                window.set_focus().unwrap();
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            window.show().unwrap();
+                            window.set_focus().unwrap();
+                        }
+                    }
+                })
+                .build(app)?;
+
             let app_data_dir = app.path().app_data_dir().expect("Failed to get app data dir");
             let conn = db::connection::init_db(&app_data_dir).expect("Failed to init database");
             db::migrations::run_migrations(&conn).expect("Failed to run migrations");
-            
-            app.manage(Mutex::new(conn));
-            
+
+            let conn_mutex = Mutex::new(conn);
+            app.manage(conn_mutex);
+
+            // 启动定时调度器
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                services::scheduler_service::SchedulerService::start_scheduler(handle).await;
+            });
+
             Ok(())
+        })
+        .on_window_event(|window, event| match event {
+            WindowEvent::CloseRequested { api, .. } => {
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             commands::repo_commands::add_repository,
             commands::repo_commands::list_repositories,
@@ -46,6 +104,9 @@ pub fn run() {
             commands::prompt_commands::set_default_prompt,
             commands::settings_commands::get_settings,
             commands::settings_commands::update_settings,
+            commands::scheduler_commands::get_scheduler_config,
+            commands::scheduler_commands::update_scheduler_config,
+            commands::scheduler_commands::trigger_auto_generation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

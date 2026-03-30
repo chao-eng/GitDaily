@@ -41,5 +41,10 @@
       "entitlements": "./Entitlements.plist",
       "minimumSystemVersion": "10.13"
     }
+  },
+  "plugins": {
+    "systemTray": {
+      "icon": "icons/icon.png"
+    }
   }
 }

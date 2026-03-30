@@ -1,6 +1,18 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
 
+export type ScheduleFrequency = 'daily' | 'weekly' | 'workdays';
+
+export interface SchedulerConfig {
+  enabled: boolean;
+  frequency: ScheduleFrequency;
+  hour: number;
+  minute: number;
+  dayOfWeek?: number;
+  repoIds: number[];
+  promptId?: number | null;
+}
+
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     aiConfig: {
@@ -12,6 +24,15 @@ export const useSettingsStore = defineStore('settings', {
     },
     gitUserName: '',
     theme: 'light' as 'light' | 'dark' | 'system',
+    scheduler: {
+      enabled: false,
+      frequency: 'daily' as ScheduleFrequency,
+      hour: 18,
+      minute: 30,
+      dayOfWeek: 5, // Friday
+      repoIds: [] as number[],
+      promptId: null as number | null,
+    } satisfies SchedulerConfig,
   }),
   actions: {
     async loadSettings() {
@@ -27,12 +48,20 @@ export const useSettingsStore = defineStore('settings', {
       } catch (err) {
         console.error('Failed to load settings from backend:', err);
       }
+
+      try {
+        // 加载定时任务配置
+        const schedulerConfig = await invoke<SchedulerConfig>('get_scheduler_config');
+        this.scheduler = schedulerConfig;
+      } catch (err) {
+        console.error('Failed to load scheduler config from backend:', err);
+      }
     },
     async saveTheme(theme: 'light' | 'dark' | 'system') {
       this.theme = theme;
       try {
-        await invoke('update_settings', { 
-          settings: { 'app.theme': theme } 
+        await invoke('update_settings', {
+          settings: { 'app.theme': theme }
         });
       } catch (err) {
         console.error('Failed to save theme setting:', err);
