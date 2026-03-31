@@ -54,10 +54,15 @@ impl SchedulerService {
             // 发送通知
             match &result {
                 Ok(report) => {
+                    let body = if report == "今日没有提交记录，跳过生成" {
+                        report.clone()
+                    } else {
+                        "日报已自动生成并保存".to_string()
+                    };
                     let _ = app.notification()
                         .builder()
                         .title("GitDaily 自动生成")
-                        .body(format!("日报已自动生成并保存: {}", report))
+                        .body(body)
                         .show();
                 }
                 Err(e) => {

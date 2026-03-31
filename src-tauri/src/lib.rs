@@ -10,6 +10,7 @@ use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
 use std::sync::Mutex;
 use tauri::WindowEvent;
+use tauri_plugin_notification::NotificationExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -70,6 +71,10 @@ pub fn run() {
             // 启动定时调度器
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
+                // 确保有权限发送通知
+                #[cfg(not(target_os = "android"))]
+                let _ = handle.notification().request_permission();
+                
                 services::scheduler_service::SchedulerService::start_scheduler(handle).await;
             });
 
