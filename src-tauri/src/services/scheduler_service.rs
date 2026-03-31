@@ -49,7 +49,12 @@ impl SchedulerService {
 
             // 执行自动生成
             let result = Self::run_auto_generation(&app, conn).await;
-            last_execution_date = today;
+            
+            // 只有成功生成或明确跳过（今日无提交）才更新最后执行日期
+            match &result {
+                Ok(_) => last_execution_date = today,
+                Err(_) => {} // 如果报错，下一分钟还可以重试
+            }
 
             // 发送通知
             match &result {
@@ -150,7 +155,7 @@ impl SchedulerService {
             // 如果没有选择仓库，使用所有启用的仓库
             let ids: Vec<i64> = {
                 let conn_lock = conn.lock().unwrap();
-                let mut stmt = conn_lock.prepare("SELECT id FROM repositories WHERE enabled = 1")?;
+                let mut stmt = conn_lock.prepare("SELECT id FROM repositories WHERE is_active = 1")?;
                 let x = stmt.query_map([], |row| row.get(0))?.collect::<rusqlite::Result<Vec<i64>>>()?;
                 x
             };
@@ -243,12 +248,12 @@ impl SchedulerService {
         let current_hour = now.hour() as u8;
         let current_minute = now.minute() as u8;
 
-        // 允许一分钟误差，因为每分钟检查一次
-        if current_hour != config.hour {
-            return false;
+        // 如果当前时间已经超过了设定的时间，就认为匹配（配合顶层的 last_execution_date 检查实现补跑）
+        if current_hour > config.hour {
+            return true;
         }
 
-        if current_minute >= config.minute && current_minute < config.minute + 2 {
+        if current_hour == config.hour && current_minute >= config.minute {
             return true;
         }
 
