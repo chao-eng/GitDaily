@@ -2,7 +2,7 @@ use std::process::Command;
 use crate::models::{CommitRecord, GitLogQuery};
 use crate::errors::{AppError, Result};
 use std::sync::Mutex;
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 
 pub struct GitService;
 
@@ -64,10 +64,15 @@ impl GitService {
         let mut repos = Vec::new();
         for id in query.repo_ids {
             let mut stmt = conn.prepare("SELECT name, path FROM repositories WHERE id = ?1")?;
-            let repo = stmt.query_row([id], |row| {
+            let repo_opt = stmt.query_row([id], |row| {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-            })?;
-            repos.push(repo);
+            }).optional()?;
+            
+            if let Some(repo) = repo_opt {
+                repos.push(repo);
+            } else {
+                println!("Warning: Repository with ID {} not found, skipping.", id);
+            }
         }
 
         let mut all_commits = Vec::new();
@@ -99,6 +104,7 @@ impl GitService {
         
         let args = vec![
             "log".to_string(),
+            "--all".to_string(),
             format!("--format={}", format),
             "--stat".to_string(),
             format!("--after={} 00:00:00", date_from),

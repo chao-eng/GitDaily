@@ -1,5 +1,5 @@
 use std::sync::Mutex;
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 use tauri::{AppHandle, Manager};
 use tokio::time::{interval, Duration};
 use chrono::{Local, Datelike, Timelike};
@@ -183,19 +183,19 @@ impl SchedulerService {
         // 1. Get the date range for today
         let today = Local::now().format("%Y-%m-%d").to_string();
 
-        // 2. Get git user name from settings
         let author = {
             let conn_lock = conn.lock().unwrap();
             let mut stmt = conn_lock.prepare("SELECT value FROM settings WHERE key = 'git.user_name'")?;
-            stmt.query_row([], |row| row.get::<_, String>(0)).ok()
+            stmt.query_row([], |row| row.get::<_, String>(0)).optional()?.unwrap_or_default()
         };
+        let author_opt = if author.is_empty() { None } else { Some(author) };
 
         // 3. Fetch commits
         let query = GitLogQuery {
             repo_ids: config.repo_ids.clone(),
             date_from: today.clone(),
             date_to: today.clone(),
-            author,
+            author: author_opt,
         };
 
         let commits = GitService::fetch_commits(conn, query)?;
@@ -208,7 +208,7 @@ impl SchedulerService {
         let prompt_content = if let Some(prompt_id) = config.prompt_id {
             let conn = conn.lock().unwrap();
             let mut stmt = conn.prepare("SELECT content FROM prompts WHERE id = ?1")?;
-            stmt.query_row([prompt_id], |row| row.get(0)).unwrap_or_else(|_| {
+            stmt.query_row([prompt_id], |row| row.get(0)).optional()?.unwrap_or_else(|| {
                 Self::get_default_prompt(&conn)
             })
         } else {
