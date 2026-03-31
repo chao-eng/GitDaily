@@ -12,6 +12,7 @@
     "opener:default",
     "dialog:default",
     "fs:default",
-    "window-state:default"
+    "window-state:default",
+    "notification:default"
   ]
 }
