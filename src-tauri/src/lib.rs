@@ -22,15 +22,16 @@ pub fn run() {
                 .item(&MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?)
                 .build()?;
 
+            let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../../public/logo.png"))?;
             let _tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
+                .icon(tray_icon)
                 .menu(&tray_menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| {
                     match event.id.as_ref() {
                         "open" => {
                             #[cfg(target_os = "macos")]
-                            app.set_activation_policy(tauri::ActivationPolicy::Regular);
+                            let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
                             if let Some(window) = app.get_webview_window("main") {
                                 window.show().unwrap();
                                 window.set_focus().unwrap();
@@ -50,7 +51,7 @@ pub fn run() {
                     {
                         let app = tray.app_handle();
                         #[cfg(target_os = "macos")]
-                        app.set_activation_policy(tauri::ActivationPolicy::Regular);
+                        let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
                         if let Some(window) = app.get_webview_window("main") {
                             window.show().unwrap();
                             window.set_focus().unwrap();
@@ -88,7 +89,7 @@ pub fn run() {
 
                 if hide_to_tray {
                     #[cfg(target_os = "macos")]
-                    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                    let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
                     window.hide().unwrap();
                     api.prevent_close();
                 } else {
