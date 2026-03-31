@@ -32,7 +32,7 @@ export const useSettingsStore = defineStore('settings', {
       dayOfWeek: 5, // Friday
       repoIds: [] as number[],
       promptId: null as number | null,
-    } satisfies SchedulerConfig,
+    } as SchedulerConfig,
   }),
   actions: {
     async loadSettings() {
