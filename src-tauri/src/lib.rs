@@ -67,6 +67,7 @@ pub fn run() {
 
             let conn_mutex = Mutex::new(conn);
             app.manage(conn_mutex);
+            app.manage(services::scheduler_service::SchedulerState(Mutex::new(String::new())));
 
             // 启动定时调度器
             let handle = app.handle().clone();

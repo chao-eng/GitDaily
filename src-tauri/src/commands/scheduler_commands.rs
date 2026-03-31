@@ -16,8 +16,14 @@ pub async fn get_scheduler_config(
 #[tauri::command]
 pub async fn update_scheduler_config(
     conn: State<'_, Mutex<Connection>>,
-    config: SchedulerConfig,
+    scheduler_state: State<'_, crate::services::scheduler_service::SchedulerState>,
+    config: crate::models::SchedulerConfig,
 ) -> Result<()> {
+    // 重置上次执行日期，允许立即重新检查并执行
+    {
+        let mut last_date = scheduler_state.0.lock().unwrap();
+        *last_date = String::new();
+    }
     SchedulerService::update_config(&conn, config)
 }
 

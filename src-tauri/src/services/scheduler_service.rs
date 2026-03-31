@@ -8,22 +8,27 @@ use crate::models::{SchedulerConfig, ScheduleFrequency, GitLogQuery, Report};
 use crate::services::{git_service::GitService, ai_service::AiService, report_service::ReportService};
 use crate::errors::Result;
 
+pub struct SchedulerState(pub Mutex<String>);
+
 pub struct SchedulerService;
 
 impl SchedulerService {
     pub async fn start_scheduler(app: AppHandle) {
         let mut interval = interval(Duration::from_secs(60)); // 每分钟检查一次
 
-        let mut last_execution_date = String::new();
-
         loop {
             interval.tick().await;
+            
             let now = Local::now();
             let today = now.format("%Y-%m-%d").to_string();
 
-            // 如果今天已经执行过，跳过
-            if last_execution_date == today {
-                continue;
+            // 检查缓存的执行日期
+            {
+                let state = app.state::<SchedulerState>();
+                let last_date = state.0.lock().unwrap();
+                if *last_date == today {
+                    continue;
+                }
             }
 
             // 获取连接并检查是否需要执行
@@ -52,7 +57,11 @@ impl SchedulerService {
             
             // 只有成功生成或明确跳过（今日无提交）才更新最后执行日期
             match &result {
-                Ok(_) => last_execution_date = today,
+                Ok(_) => {
+                    let state = app.state::<SchedulerState>();
+                    let mut last_date = state.0.lock().unwrap();
+                    *last_date = today;
+                },
                 Err(_) => {} // 如果报错，下一分钟还可以重试
             }
 
