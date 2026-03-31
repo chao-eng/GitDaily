@@ -183,12 +183,19 @@ impl SchedulerService {
         // 1. Get the date range for today
         let today = Local::now().format("%Y-%m-%d").to_string();
 
-        // 2. Fetch commits
+        // 2. Get git user name from settings
+        let author = {
+            let conn_lock = conn.lock().unwrap();
+            let mut stmt = conn_lock.prepare("SELECT value FROM settings WHERE key = 'git.user_name'")?;
+            stmt.query_row([], |row| row.get::<_, String>(0)).ok()
+        };
+
+        // 3. Fetch commits
         let query = GitLogQuery {
             repo_ids: config.repo_ids.clone(),
             date_from: today.clone(),
             date_to: today.clone(),
-            author: None,
+            author,
         };
 
         let commits = GitService::fetch_commits(conn, query)?;

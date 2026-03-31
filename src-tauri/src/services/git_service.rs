@@ -7,22 +7,51 @@ use rusqlite::Connection;
 pub struct GitService;
 
 impl GitService {
-    pub fn get_git_user_name(repo_path: Option<&str>) -> Result<String> {
+    fn create_git_command(path: Option<&str>) -> Command {
         let mut cmd = Command::new("git");
-        cmd.arg("config").arg("user.name");
         
-        if let Some(path) = repo_path {
-            cmd.current_dir(path);
+        // 修复 MacOS 打包后环境变量丢失的问题
+        #[cfg(target_os = "macos")]
+        {
+            let current_path = std::env::var("PATH").unwrap_or_default();
+            let home = std::env::var("HOME").unwrap_or_default();
+            
+            // 拼接常用的 Git 路径（Homebrew 路径等）
+            let new_path = format!(
+                "{}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin", 
+                current_path
+            );
+            
+            cmd.env("PATH", new_path);
+            if !home.is_empty() {
+                cmd.env("HOME", home);
+            }
         }
+
+        if let Some(p) = path {
+            cmd.current_dir(p);
+        }
+        cmd
+    }
+
+    pub fn get_git_user_name(repo_path: Option<&str>) -> Result<String> {
+        let mut cmd = Self::create_git_command(repo_path);
+        cmd.arg("config").arg("user.name");
         
         let output = cmd.output()?;
         if output.status.success() {
-            Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-        } else {
-            // Fallback to global config if no repo specific found
-            let global_output = Command::new("git").args(["config", "--global", "user.name"]).output()?;
-            Ok(String::from_utf8_lossy(&global_output.stdout).trim().to_string())
+            let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !name.is_empty() {
+                return Ok(name);
+            }
         }
+
+        // 尝试全局配置
+        let mut global_cmd = Self::create_git_command(None);
+        global_cmd.args(["config", "--global", "user.name"]);
+        let global_output = global_cmd.output()?;
+        
+        Ok(String::from_utf8_lossy(&global_output.stdout).trim().to_string())
     }
 
     pub fn fetch_commits(
@@ -42,7 +71,8 @@ impl GitService {
         }
 
         let mut all_commits = Vec::new();
-        let author = query.author.or_else(|| Self::get_git_user_name(None).ok());
+        // 只有当查询显式要求过滤作者时才使用设置
+        let author = query.author;
 
         // 2. Fetch from each repo
         for (name, path) in repos {
@@ -67,7 +97,7 @@ impl GitService {
         let separator = "==COMMIT_START==";
         let format = format!("{}%H|%h|%an|%ae|%at|%ai|%s", separator);
         
-        let mut args = vec![
+        let args = vec![
             "log".to_string(),
             format!("--format={}", format),
             "--stat".to_string(),
@@ -75,22 +105,44 @@ impl GitService {
             format!("--before={} 23:59:59", date_to),
         ];
 
+        let mut args_with_author = args.clone();
+        let mut has_author_filter = false;
         if let Some(a) = author {
-            if !a.is_empty() {
-                args.push(format!("--author={}", a));
+            if !a.trim().is_empty() {
+                args_with_author.push(format!("--author={}", a));
+                has_author_filter = true;
             }
         }
 
-        let output = Command::new("git")
-            .current_dir(path)
-            .args(&args)
-            .output()?;
+        println!("Executing git in {}: git {}", path, args_with_author.join(" "));
 
-        if !output.status.success() {
+        let mut cmd = Self::create_git_command(Some(path));
+        cmd.args(&args_with_author);
+        
+        let output = cmd.output()?;
+        let mut stdout = String::from_utf8_lossy(&output.stdout).to_string();
+
+        // 诊断逻辑：如果带作者过滤没读到，且我们确实设置了过滤，尝试不带作者过滤读一次
+        if stdout.trim().is_empty() && has_author_filter {
+            println!("No commits found for author '{}'. Retrying without author filter...", author.unwrap());
+            let mut fallback_cmd = Self::create_git_command(Some(path));
+            fallback_cmd.args(&args);
+            let fallback_output = fallback_cmd.output()?;
+            
+            if fallback_output.status.success() {
+                let fallback_stdout = String::from_utf8_lossy(&fallback_output.stdout);
+                if !fallback_stdout.trim().is_empty() {
+                    println!("Diagnostic: Found commits WITHOUT author filter. Your configured Git username may be incorrect.");
+                    // 为了定时任务能跑通，如果带作者过滤不到，我们可以选择降级到“不限作者”
+                    stdout = fallback_stdout.to_string();
+                }
+            }
+        }
+
+        if !output.status.success() && stdout.trim().is_empty() {
             return Err(AppError::GitError(String::from_utf8_lossy(&output.stderr).to_string()));
         }
 
-        let stdout = String::from_utf8_lossy(&output.stdout);
         let mut commits = Vec::new();
 
         // Split by our custom separator
