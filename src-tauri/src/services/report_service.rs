@@ -77,4 +77,31 @@ impl ReportService {
         }
         Ok(dates)
     }
+
+    pub fn get_activity_data(conn: &Mutex<Connection>) -> Result<std::collections::HashMap<String, i32>> {
+        let conn = conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT date, raw_commits FROM reports")?;
+        let mut activity = std::collections::HashMap::new();
+
+        let rows = stmt.query_map([], |row| {
+             let date: String = row.get(0)?;
+             let raw_commits: Option<String> = row.get(1)?;
+             let count = if let Some(json) = raw_commits {
+                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&json) {
+                     if let Some(arr) = v.as_array() {
+                         arr.len() as i32
+                     } else { 1 }
+                 } else { 1 }
+             } else { 1 };
+             Ok((date, count))
+        })?;
+
+        for row in rows {
+            let (date, count) = row?;
+            let entry = activity.entry(date).or_insert(0);
+            *entry += count;
+        }
+
+        Ok(activity)
+    }
 }

@@ -123,6 +123,7 @@ pub fn run() {
             commands::report_commands::save_report,
             commands::report_commands::delete_report,
             commands::report_commands::get_report_dates,
+            commands::report_commands::get_activity_data,
             commands::prompt_commands::list_prompts,
             commands::prompt_commands::create_prompt,
             commands::prompt_commands::update_prompt,

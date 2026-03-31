@@ -6,15 +6,15 @@ defineOptions({
   name: 'ReportHeatmap'
 })
 
-const reportDates = ref<string[]>([])
+const activityData = ref<Record<string, number>>({})
 const loading = ref(true)
 
-const loadDates = async () => {
+const loadActivity = async () => {
   try {
-    const dates = await invoke<string[]>('get_report_dates')
-    reportDates.value = dates
+    const data = await invoke<Record<string, number>>('get_activity_data')
+    activityData.value = data
   } catch (err) {
-    console.error('Failed to load report dates:', err)
+    console.error('Failed to load activity data:', err)
   } finally {
     loading.value = false
   }
@@ -30,18 +30,29 @@ const days = computed(() => {
     const dateStr = d.toISOString().split('T')[0]
     result.push({
       date: dateStr,
-      hasReport: reportDates.value.includes(dateStr),
+      count: activityData.value[dateStr] || 0,
       dayOfWeek: d.getDay()
     })
   }
   return result
 })
 
+const getLevelClass = (count: number) => {
+  if (count === 0) return 'bg-bg-base border border-border-base/30 hover:border-primary/30 hover:bg-primary/5'
+  if (count < 3) return 'bg-primary/20'
+  if (count < 6) return 'bg-primary/45'
+  if (count < 10) return 'bg-primary/75'
+  return 'bg-primary'
+}
+
 // Group by weeks for the grid
 const weeks = computed(() => {
+// ... same logic
   const result = []
   let currentWeek = []
   
+  if (days.value.length === 0) return []
+
   // Padding for the first week
   const firstDay = new Date(days.value[0].date).getDay()
   for (let i = 0; i < firstDay; i++) {
@@ -67,7 +78,7 @@ const weeks = computed(() => {
 })
 
 onMounted(() => {
-  loadDates()
+  loadActivity()
 })
 </script>
 
@@ -100,15 +111,14 @@ onMounted(() => {
           <el-tooltip
             v-for="(day, dIdx) in week"
             :key="dIdx"
-            :content="day ? `${day.date}: ${day.hasReport ? '已生成日报' : '无记录'}` : ''"
+            :content="day ? `${day.date}: ${day.count} 次提交` : ''"
             :disabled="!day"
             placement="top"
           >
             <div 
               class="w-3.5 h-3.5 rounded-sm transition-all duration-300"
               :class="[
-                !day ? 'invisible' : 
-                day.hasReport ? 'bg-primary' : 'bg-bg-base border border-border-base/30 hover:border-primary/30 hover:bg-primary/5'
+                !day ? 'invisible' : getLevelClass(day.count)
               ]"
             ></div>
           </el-tooltip>

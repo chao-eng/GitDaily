@@ -36,3 +36,10 @@ pub async fn get_report_dates(
 ) -> Result<Vec<String>> {
     ReportService::get_report_dates(&conn)
 }
+
+#[tauri::command]
+pub async fn get_activity_data(
+    conn: State<'_, Mutex<Connection>>,
+) -> Result<std::collections::HashMap<String, i32>> {
+    ReportService::get_activity_data(&conn)
+}
