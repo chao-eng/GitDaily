@@ -135,6 +135,7 @@ pub fn run() {
             commands::scheduler_commands::get_scheduler_config,
             commands::scheduler_commands::update_scheduler_config,
             commands::scheduler_commands::trigger_auto_generation,
+            commands::notification_commands::test_feishu_notification,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

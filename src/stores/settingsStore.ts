@@ -33,6 +33,11 @@ export const useSettingsStore = defineStore('settings', {
       repoIds: [] as number[],
       promptId: null as number | null,
     } as SchedulerConfig,
+    notification: {
+      feishuEnabled: false,
+      feishuWebhookUrl: '',
+      notifyOnGenerate: false,
+    },
   }),
   actions: {
     async loadSettings() {
@@ -45,6 +50,11 @@ export const useSettingsStore = defineStore('settings', {
         if (settings['ai.max_tokens']) this.aiConfig.maxTokens = parseInt(settings['ai.max_tokens']);
         if ('git.user_name' in settings) this.gitUserName = settings['git.user_name'];
         if (settings['app.theme']) this.theme = settings['app.theme'] as 'light' | 'dark' | 'system';
+        
+        // 加载通知配置
+        if ('notification.feishu_enabled' in settings) this.notification.feishuEnabled = settings['notification.feishu_enabled'] === 'true';
+        if ('notification.feishu_webhook_url' in settings) this.notification.feishuWebhookUrl = settings['notification.feishu_webhook_url'];
+        if ('notification.notify_on_generate' in settings) this.notification.notifyOnGenerate = settings['notification.notify_on_generate'] === 'true';
       } catch (err) {
         console.error('Failed to load settings from backend:', err);
       }

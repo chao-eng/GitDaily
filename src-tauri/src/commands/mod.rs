@@ -5,6 +5,7 @@ pub mod prompt_commands;
 pub mod report_commands;
 pub mod settings_commands;
 pub mod scheduler_commands;
+pub mod notification_commands;
 
 use serde::Serialize;
 

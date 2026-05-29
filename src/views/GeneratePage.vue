@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { ElMessage } from "element-plus";
 import { useRepoStore } from "../stores/repoStore";
 import { useGenerateStore, CommitRecord } from "../stores/generateStore";
@@ -23,10 +22,23 @@ const updatePreview = async () => {
 watch(() => generateStore.generatedContent, updatePreview);
 
 const prompts = ref<any[]>([]);
-const selectedRepoIds = ref<number[]>([]);
-const dateRange = ref<[Date, Date]>([new Date(), new Date()]);
-const generating = ref(false);
 const commitsLoading = ref(false);
+
+const selectedRepoIds = computed({
+  get: () => generateStore.selectedRepoIds,
+  set: (val) => {
+    generateStore.selectedRepoIds = val;
+  }
+});
+
+const dateRange = computed({
+  get: () => generateStore.dateRangeValue,
+  set: (val) => {
+    generateStore.dateRangeValue = val;
+  }
+});
+
+const generating = computed(() => generateStore.isGenerating);
 
 const loadInitialData = async () => {
   try {
@@ -37,12 +49,16 @@ const loadInitialData = async () => {
     repoStore.setRepositories(repos);
     prompts.value = promptList;
 
-    // Select active repos by default
-    selectedRepoIds.value = repos.filter((r) => r.isActive).map((r) => r.id);
+    // 如果还没有选择过仓库，默认选中所有启用的仓库
+    if (generateStore.selectedRepoIds.length === 0) {
+      generateStore.selectedRepoIds = repos.filter((r) => r.isActive).map((r) => r.id);
+    }
 
-    // Select default prompt
-    const defaultPrompt = promptList.find((p) => p.is_default);
-    if (defaultPrompt) generateStore.selectedPromptId = defaultPrompt.id;
+    // 如果还没有选中模板，默认选中默认模板
+    if (!generateStore.selectedPromptId) {
+      const defaultPrompt = promptList.find((p) => p.is_default);
+      if (defaultPrompt) generateStore.selectedPromptId = defaultPrompt.id;
+    }
   } catch (err) {
     console.error(err);
   }
@@ -81,8 +97,6 @@ const fetchCommits = async () => {
   }
 };
 
-const unlistens = ref<UnlistenFn[]>([]);
-
 const generateReport = async () => {
   if (generateStore.commits.length === 0) {
     ElMessage.warning("请先获取并选择提交记录");
@@ -93,67 +107,13 @@ const generateReport = async () => {
     return;
   }
 
-  generating.value = true;
-  generateStore.generatedContent = "";
+  const prompt = prompts.value.find(
+    (p) => p.id === generateStore.selectedPromptId
+  );
+  if (!prompt) return;
 
-  try {
-    // 1. Set up listeners
-    const unlistenChunk = await listen<string>(
-      "report-stream-chunk",
-      (event) => {
-        generateStore.generatedContent += event.payload;
-      }
-    );
-    const unlistenDone = await listen<string>(
-      "report-stream-done",
-      async (event) => {
-        generateStore.generatedContent = event.payload;
-        generating.value = false;
-
-        // Save to History
-        try {
-          const formatLocalDate = (d: Date) => {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, "0");
-            const day = String(d.getDate()).padStart(2, "0");
-            return `${year}-${month}-${day}`;
-          };
-
-          const reportData = {
-            id: 0, // Assigned by DB
-            date: formatLocalDate(dateRange.value[1]), // Use end date as report date
-            rawCommits: JSON.stringify(generateStore.commits),
-            content: event.payload,
-            repoIds: selectedRepoIds.value.join(","),
-            promptId: generateStore.selectedPromptId,
-            createdAt: new Date().toISOString(),
-          };
-          await invoke("save_report", { report: reportData });
-          ElMessage.success("日报已生成并保存");
-        } catch (err) {
-          ElMessage.error("保存历史记录失败: " + err);
-        }
-      }
-    );
-    unlistens.value.push(unlistenChunk, unlistenDone);
-
-    // 2. Start generation
-    const prompt = prompts.value.find(
-      (p) => p.id === generateStore.selectedPromptId
-    );
-    await invoke("generate_report_stream", {
-      promptContent: prompt.content,
-      commits: generateStore.commits,
-    });
-  } catch (err) {
-    ElMessage.error("生成失败: " + err);
-    generating.value = false;
-  }
+  await generateStore.startGeneration(prompt.content);
 };
-
-onUnmounted(() => {
-  unlistens.value.forEach((u) => u());
-});
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(generateStore.generatedContent);
@@ -162,6 +122,10 @@ const copyToClipboard = () => {
 
 onMounted(() => {
   loadInitialData();
+  // 确保每次加载时，如果正在生成，能自动更新一次 markdown 预览
+  if (generateStore.generatedContent) {
+    updatePreview();
+  }
 });
 </script>
 

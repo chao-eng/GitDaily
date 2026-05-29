@@ -11,6 +11,7 @@ const repoStore = useRepoStore()
 const loading = ref(false)
 const testing = ref(false)
 const triggering = ref(false)
+const testingFeishu = ref(false)
 const prompts = ref<Array<{ id: number; title: string }>>([])
 
 const loadSettings = async () => {
@@ -57,6 +58,9 @@ const saveSettings = async () => {
       'ai.max_tokens': settingsStore.aiConfig.maxTokens.toString(),
       'git.user_name': settingsStore.gitUserName,
       'app.theme': settingsStore.theme,
+      'notification.feishu_enabled': settingsStore.notification.feishuEnabled.toString(),
+      'notification.feishu_webhook_url': settingsStore.notification.feishuWebhookUrl,
+      'notification.notify_on_generate': settingsStore.notification.notifyOnGenerate.toString(),
     }
     await invoke('update_settings', { settings: settingsObj })
     // 保存 scheduler 配置
@@ -84,6 +88,24 @@ const testConnection = async () => {
     ElMessage.error('连接异常: ' + err)
   } finally {
     testing.value = false
+  }
+}
+
+const testFeishuConnection = async () => {
+  if (!settingsStore.notification.feishuWebhookUrl) {
+    ElMessage.warning('请先填写飞书 Webhook 地址')
+    return
+  }
+  testingFeishu.value = true
+  try {
+    await invoke('test_feishu_notification', {
+      webhookUrl: settingsStore.notification.feishuWebhookUrl
+    })
+    ElMessage.success('测试消息发送成功，请前往群聊查看！')
+  } catch (err) {
+    ElMessage.error('发送测试消息失败: ' + err)
+  } finally {
+    testingFeishu.value = false
   }
 }
 
@@ -358,6 +380,61 @@ onMounted(() => {
             >
               <el-icon v-if="triggering" class="animate-spin mr-1"><Loading /></el-icon>
               立即测试
+            </button>
+          </div>
+        </el-form>
+      </section>
+
+      <!-- Notification Configuration -->
+      <section class="lark-card bg-bg-container p-8 shadow-lark">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <el-icon class="text-primary" :size="20"><Bell /></el-icon>
+          </div>
+          <h2 class="text-lg font-bold text-text-title">通知渠道配置</h2>
+        </div>
+
+        <el-form :model="settingsStore.notification" label-position="top" class="lark-form">
+          <el-form-item label="启用自动发送通知">
+            <el-switch v-model="settingsStore.notification.notifyOnGenerate" />
+            <div class="text-text-placeholder text-xs mt-1">开启后，无论是手动生成还是定时自动生成的日报，保存后都会通过以下配置的通道自动推送</div>
+          </el-form-item>
+
+          <el-form-item label="飞书通知通道">
+            <el-switch v-model="settingsStore.notification.feishuEnabled" />
+            <div class="text-text-placeholder text-xs mt-1">使用自定义群聊机器人发送卡片消息通知</div>
+          </el-form-item>
+
+          <div v-if="settingsStore.notification.feishuEnabled" class="grid grid-cols-1 gap-y-2 mt-4">
+            <el-form-item label="飞书机器人 Webhook 地址">
+              <el-input
+                v-model="settingsStore.notification.feishuWebhookUrl"
+                placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..."
+                type="text"
+              />
+              <div class="text-text-placeholder text-xs mt-1">飞书群聊机器人 Webhook 链接，格式如：https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxxxxxxxxxxx</div>
+            </el-form-item>
+          </div>
+
+          <div class="mt-8 flex gap-4">
+            <button
+              type="button"
+              class="industrial-btn-primary px-8 py-2"
+              @click.prevent="saveSettings"
+              :disabled="loading"
+            >
+              <el-icon v-if="loading" class="animate-spin mr-1"><Loading /></el-icon>
+              保存配置
+            </button>
+            <button
+              v-if="settingsStore.notification.feishuEnabled"
+              type="button"
+              class="industrial-btn-secondary px-6 py-2"
+              @click.prevent="testFeishuConnection"
+              :disabled="testingFeishu"
+            >
+              <el-icon v-if="testingFeishu" class="animate-spin mr-1"><Loading /></el-icon>
+              测试通道
             </button>
           </div>
         </el-form>

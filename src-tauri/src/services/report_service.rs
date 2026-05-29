@@ -47,18 +47,29 @@ impl ReportService {
         conn: &Mutex<Connection>,
         report: Report,
     ) -> Result<i64> {
-        let conn = conn.lock().unwrap();
-        conn.execute(
-            "INSERT INTO reports (date, raw_commits, content, repo_ids, prompt_id) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![
-                report.date,
-                report.raw_commits,
-                report.content,
-                report.repo_ids,
-                report.prompt_id,
-            ],
-        )?;
-        Ok(conn.last_insert_rowid())
+        let last_id = {
+            let conn_lock = conn.lock().unwrap();
+            conn_lock.execute(
+                "INSERT INTO reports (date, raw_commits, content, repo_ids, prompt_id) VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![
+                    report.date,
+                    report.raw_commits,
+                    report.content,
+                    report.repo_ids,
+                    report.prompt_id,
+                ],
+            )?;
+            conn_lock.last_insert_rowid()
+        };
+
+        // 异步或后台触发飞书通知，避免持锁导致死锁
+        crate::services::notification_service::NotificationService::trigger_report_notification(
+            conn,
+            &report.date,
+            &report.content,
+        );
+
+        Ok(last_id)
     }
 
     pub fn delete_report(conn: &Mutex<Connection>, id: i64) -> Result<()> {
